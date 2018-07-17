@@ -30,7 +30,7 @@ set splitbelow splitright
 if or(has('gui_running'), has('gui_vimr'))
     colorscheme base16-atelier-dune
 else
-    colorscheme desert
+    colorscheme sidewalk-dark
 end
 
 augroup filetypes

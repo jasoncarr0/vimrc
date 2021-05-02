@@ -1,11 +1,33 @@
-" pathogen
+let g:ale_disable_lsp=1
 
+
+" pathogen
+set runtimepath^=~/.vim runtimepath+=~/.vim/after
+let &packpath = &runtimepath
 execute pathogen#infect()
+" set rtp+=fnamemodify(expand("$VIM_PLUGINS",':f:p'))
+
+
+" tmux fix
+if exists('$TMUX')
+    let &t_SI = "\<Esc>Ptmux;\<Esc>\e[5 q\<Esc>\\"
+    let &t_EI = "\<Esc>Ptmux;\<Esc>\e[2 q\<Esc>\\"
+else
+    let &t_SI = "\e[5 q"
+    let &t_EI = "\e[2 q"
+endif
+"
 
 " airline
 let g:airline_powerline_fonts = 1
 let g:airline#extensions#tabline#enabled = 1
 let g:airline#extensions#tabline#formatter = 'unique_tail'
+
+" ale
+let g:ale_fix_on_save = 1
+
+" elm
+let g:elm_format_autosave = 1
 
 " syntax
 syntax on
@@ -26,11 +48,13 @@ set backupdir=~/.vim-tmp,~/.tmp,~/tmp,/tmp
 set backupskip=/tmp/*,/private/tmp/*
 set wildmode=longest:list,full
 set splitbelow splitright
+set number relativenumber
 
 if or(has('gui_running'), has('gui_vimr'))
     colorscheme base16-atelier-dune
 else
-    colorscheme desert
+    colorscheme sidewalk-dark
+    let g:airline_theme="deus"
 end
 
 augroup filetypes
@@ -48,14 +72,44 @@ augroup filetypes
     au BufRead,BufNewFile,BufFilePre README set filetype=markdown
 
     " sml
-    au BufRead,BufNewFile,BufFilePre *.sml set tabstop=8 shiftwidth=3
-    au BufRead,BufNewFile,BufFilePre *.sig set tabstop=8 shiftwidth=3
-    au BufRead,BufNewFile,BufFilePre *.fun set tabstop=8 shiftwidth=3
-    au BufRead,BufNewFile,BufFilePre *.mlb set tabstop=8 shiftwidth=3
+    au BufRead,BufNewFile,BufFilePre *.sml set tabstop=8 softtabstop=3 shiftwidth=3
+    au BufRead,BufNewFile,BufFilePre *.sig set tabstop=8 softtabstop=3 shiftwidth=3 filetype=sml
+    au BufRead,BufNewFile,BufFilePre *.fun set tabstop=8 softtabstop=3 shiftwidth=3 filetype=sml
+    au BufRead,BufNewFile,BufFilePre *.mlb set tabstop=8 softtabstop=3 shiftwidth=3 filetype=sml
     au BufRead,BufNewFile,BufFilePre *.sxml set tabstop=8 softtabstop=3 shiftwidth=3 filetype=sml
     au BufRead,BufNewFile,BufFilePre *.ssa set tabstop=8 softtabstop=3 shiftwidth=3 filetype=sml
     au BufRead,BufNewFile,BufFilePre *.ssa2 set tabstop=8 softtabstop=3 shiftwidth=3 filetype=sml
 
+
+augroup END
+augroup vimbettersml
+  au!
+
+  " ----- Keybindings -----
+
+  au FileType sml nnoremap <silent> <buffer> <leader>t :SMLTypeQuery<CR>
+  au FileType sml nnoremap <silent> <buffer> gd :SMLJumpToDef<CR>
+
+  " ----- Other settings -----
+
+  " Uncomment to try out conceal characters
+  "au FileType sml setlocal conceallevel=2
+
+  " Uncomment to try out same-width conceal characters
+  "let g:sml_greek_tyvar_show_tick = 1
+augroup END
+" eclim java-specific shortcuts
+augroup Java
+   au!
+   au FileType java nnoremap <buffer> <localleader>jr :JavaRename<Space>
+   au FileType java nnoremap <buffer> <localleader>jg :JavaGet<cr>
+   au FileType java nnoremap <buffer> <localleader>js :JavaSet<cr>
+   au FileType java nnoremap <buffer> <localleader>jb :JavaGetSet<cr>
+   au FileType java nnoremap <buffer> <localleader>jc :JavaConstructor<cr>
+   au FileType java nnoremap <buffer> <localleader>ji :JavaImport<cr>
+   au FileType java nnoremap <buffer> <localleader>jo :JavaImportOrganize<cr>
+   au FileType java nnoremap <buffer> <localleader>jf :JavaSearch<cr>
+   au FileType java nnoremap <buffer> <localleader>p ipublic <esc>
 augroup END
 
 
@@ -73,14 +127,11 @@ let mapleader= ","
 let maplocalleader = "\\"
 noremap <space> :
 
-
-
 " aliases because shift
 command! WQ wq
 command! Wq wq
 command! W w
 command! Q q
-
 
 " faster windows
 nnoremap <C-J> <C-W><C-J>
@@ -102,31 +153,15 @@ command! -range=% -nargs=0 Space2Tab execute '<line1>,<line2>s#^\( \{'.&ts.'\}\)
 " color the current column, for lining things up
 " also works as a mark for __
 function! StickColumn()
-  if &cc == virtcol(".")
-    let &cc=0
-  else
-    let &cc=virtcol(".")
-  endif
+   if &cc == virtcol(".")
+      let &cc=0
+   else
+      let &cc=virtcol(".")
+   endif
 endfunction
 nnoremap <silent> z_ :call StickColumn()<cr>
 " jump to column
 nnoremap <silent> g_ :execute "normal" &cc . "\|"<cr>
-
-" moves the cursor to the first nonwhitespace before column
-" function! SearchBefCol (col, flags)
-"     call cursor(0, a:col)
-"     call search('\%<' . string(virtcol('.')) . 'v\S', a:flags)
-" endfunction
-
-" find next text upwards in column
-" nnoremap <silent> <leader>?_ :call SearchBefCol(&cc, "bWz")<cr>
-" nnoremap <silent> <leader>/_ :call SearchBefCol(&cc, "Wz")<cr>
-" nnoremap <silent> <leader>_? :call SearchBefCol(&cc, "bWz")<cr>
-" nnoremap <silent> <leader>_/ :call SearchBefCol(&cc, "Wz")<cr>
-" nnoremap <silent> <leader>?. :call SearchBefCol(col("."), "bWz")<cr>
-" nnoremap <silent> <leader>/. .call SearchBefCol(col("."), "Wz")<cr>
-" nnoremap <silent> <leader>.? :call SearchBefCol(col("."), "bWz")<cr>
-" nnoremap <silent> <leader>./ :call SearchBefCol(col("."), "Wz")<cr>
 
 " insert single character
 nnoremap <C-i> i_<esc>r
@@ -140,6 +175,8 @@ nnoremap <leader>se :e ~/.vim/vimrc<cr>
 " buffer jetpack
 nnoremap gb :ls<cr>:b<space>
 
+"
+
 " eclim shortcuts
 nnoremap <localleader>ef :LocateFile<cr>
 nnoremap <localleader>jl :ProjectList<cr>
@@ -152,26 +189,12 @@ command! PL ProjectList
 command! PT ProjectTree
 command! WS WorkspaceSettings
 
-" eclim java-specific shortcuts
-augroup Java
-    au!
-    au FileType java nnoremap <buffer> <localleader>jr :JavaRename<Space>
-    au FileType java nnoremap <buffer> <localleader>jg :JavaGet<cr>
-    au FileType java nnoremap <buffer> <localleader>js :JavaSet<cr>
-    au FileType java nnoremap <buffer> <localleader>jb :JavaGetSet<cr>
-    au FileType java nnoremap <buffer> <localleader>jc :JavaConstructor<cr>
-    au FileType java nnoremap <buffer> <localleader>ji :JavaImport<cr>
-    au FileType java nnoremap <buffer> <localleader>jo :JavaImportOrganize<cr>
-    au FileType java nnoremap <buffer> <localleader>jf :JavaSearch<cr>
-    au FileType java nnoremap <buffer> <localleader>p ipublic <esc>
-augroup END
-
 
 " matching
 augroup SpecialSyntax
-    au!
-    au Syntax * syntax match ExtraSpaces /\s\+$/
-    au Syntax * hi ExtraSpaces ctermbg=magenta guibg=Gray
+   au!
+   au Syntax * syntax match ExtraSpaces /\s\+$/
+   au Syntax * hi ExtraSpaces ctermbg=magenta guibg=Gray
 augroup END
 syntax match ExtraSpaces /\s\+$/
 hi ExtraSpaces ctermbg=Gray guibg=Gray
@@ -179,10 +202,10 @@ hi ExtraSpaces ctermbg=Gray guibg=Gray
 " Scratch buffers with options, credit:
 " http://dhruvasagar.com/2014/03/11/creating-custom-scratch-buffers-in-vim
 function! ScratchEdit(cmd, options)
-    exe a:cmd tempname()
-    setl buftype=nofile bufhidden=wipe noswapfile
-    " silent file Scratch~
-    if !empty(a:options) | exe 'setl' a:options | endif
+   exe a:cmd tempname()
+   setl buftype=nofile bufhidden=wipe noswapfile
+   " silent file Scratch~
+   if !empty(a:options) | exe 'setl' a:options | endif
 endfunction
 
 command! -bar -nargs=* Sedit call ScratchEdit('edit', <q-args>)
@@ -206,3 +229,40 @@ nnoremap <silent> <leader>ah :noh<cr>
 nnoremap <leader>w :w<cr>
 nnoremap <leader>qq :q<cr>
 nnoremap <leader>e :e<space>
+
+
+
+let g:lsp_log_verbose = 1
+let g:lsp_log_file = expand('~/vim-lsp.log')
+
+if executable('clangd')
+    " pip install python-language-server
+    au User lsp_setup call lsp#register_server({
+        \ 'name': 'clangd',
+        \ 'cmd': {server_info->['clangd']},
+        \ 'allowlist': ['c', 'cpp'],
+        \ })
+endif
+
+function! s:on_lsp_buffer_enabled() abort
+    setlocal omnifunc=lsp#complete
+    setlocal signcolumn=yes
+    if exists('+tagfunc') | setlocal tagfunc=lsp#tagfunc | endif
+    nmap <buffer> gd <plug>(lsp-definition)
+    nmap <buffer> gr <plug>(lsp-references)
+    nmap <buffer> gi <plug>(lsp-implementation)
+    nmap <buffer> gt <plug>(lsp-type-definition)
+    nmap <buffer> <leader>rn <plug>(lsp-rename)
+    nmap <buffer> [g <Plug>(lsp-previous-diagnostic)
+    nmap <buffer> ]g <Plug>(lsp-next-diagnostic)
+    nmap <buffer> K <plug>(lsp-hover)
+    
+    " refer to doc to add more commands
+endfunction
+
+augroup lsp_install
+    au!
+    " call s:on_lsp_buffer_enabled only for languages that has the server registered.
+    au User lsp_buffer_enabled call s:on_lsp_buffer_enabled()
+    au User lsp_buffer_enabled let g:ale_disable_lsp=1
+augroup END

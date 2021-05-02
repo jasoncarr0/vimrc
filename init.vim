@@ -1,8 +1,6 @@
-set runtimepath^=~/.vim runtimepath+=~/.vim/after
-let &packpath = &runtimepath
 source ~/.vim/vimrc
 
-let g:python3_host_prog='/usr/local/bin/python3'
+" let g:python3_host_prog='/usr/local/bin/python3'
 
 " nvimrc-specific commands 
 nnoremap <leader>ss :source ~/.config/nvim/init.vim<cr>

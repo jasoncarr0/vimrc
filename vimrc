@@ -1,39 +1,26 @@
-let g:ale_disable_lsp=1
 
-
+set nocompatible
 " pathogen
-set runtimepath^=~/.vim runtimepath+=~/.vim/after
-let &packpath = &runtimepath
-execute pathogen#infect()
+" set runtimepath^=~/.vim runtimepath+=~/.vim/after
+" let &packpath = &runtimepath
+" execute pathogen#infect()
 " set rtp+=fnamemodify(expand("$VIM_PLUGINS",':f:p'))
 
+call plug#begin('~/.vim/plugged')
 
-" tmux fix
-if exists('$TMUX')
-    let &t_SI = "\<Esc>Ptmux;\<Esc>\e[5 q\<Esc>\\"
-    let &t_EI = "\<Esc>Ptmux;\<Esc>\e[2 q\<Esc>\\"
-else
-    let &t_SI = "\e[5 q"
-    let &t_EI = "\e[2 q"
-endif
-"
+Plug 'https://github.com/vim-airline/vim-airline.git'
+Plug 'https://github.com/vim-airline/vim-airline-themes.git'
+Plug 'https://github.com/tpope/vim-vinegar.git'
 
-" airline
-let g:airline_powerline_fonts = 1
-let g:airline#extensions#tabline#enabled = 1
-let g:airline#extensions#tabline#formatter = 'unique_tail'
+Plug 'https://github.com/jasoncarr0/sidewalk-colorscheme.git'
 
-" ale
-let g:ale_fix_on_save = 1
+Plug 'neoclide/coc.nvim', {'branch': 'release'}
 
-" elm
-let g:elm_format_autosave = 1
+call plug#end()
 
 " syntax
 syntax on
 filetype plugin indent on
-" set termguicolors
-set nocompatible
 
 " various settings
 
@@ -57,70 +44,77 @@ else
     let g:airline_theme="deus"
 end
 
-augroup filetypes
-    au!
-    " odt
-    au BufReadPost *.odt :%!pandoc % -f odt -t markdown
-    au BufWritePost *.odt :%!pandoc -f markdown -t odt -o %
 
-    " scala
-    " au BufRead,BufNewFile,BufFilePre *.scala set filetype=scala
-    " au! Syntax source ~/.vim/syntax/scala.vim
+" airline
+let g:airline_powerline_fonts = 1
+let g:airline#extensions#tabline#enabled = 1
+let g:airline#extensions#tabline#formatter = 'unique_tail'
 
-    " markdown
-    au BufRead,BufNewFile,BufFilePre *.md set filetype=markdown
-    au BufRead,BufNewFile,BufFilePre README set filetype=markdown
+" set termguicolors
+set nocompatible
 
-    " sml
-    au BufRead,BufNewFile,BufFilePre *.sml set tabstop=8 softtabstop=3 shiftwidth=3
-    au BufRead,BufNewFile,BufFilePre *.sig set tabstop=8 softtabstop=3 shiftwidth=3 filetype=sml
-    au BufRead,BufNewFile,BufFilePre *.fun set tabstop=8 softtabstop=3 shiftwidth=3 filetype=sml
-    au BufRead,BufNewFile,BufFilePre *.mlb set tabstop=8 softtabstop=3 shiftwidth=3 filetype=sml
-    au BufRead,BufNewFile,BufFilePre *.sxml set tabstop=8 softtabstop=3 shiftwidth=3 filetype=sml
-    au BufRead,BufNewFile,BufFilePre *.ssa set tabstop=8 softtabstop=3 shiftwidth=3 filetype=sml
-    au BufRead,BufNewFile,BufFilePre *.ssa2 set tabstop=8 softtabstop=3 shiftwidth=3 filetype=sml
+""""""""""""""
+" CoC config "
+""""""""""""""
 
+nmap <silent> gd <Plug>(coc-definition)
+nmap <silent> gy <Plug>(coc-type-definition)
+nmap <silent> gi <Plug>(coc-implementation)
+nmap <silent> gr <Plug>(coc-references)
 
-augroup END
-augroup vimbettersml
-  au!
+function! s:show_documentation()
+  if (index(['vim','help'], &filetype) >= 0)
+    execute 'h '.expand('<cword>')
+  elseif (coc#rpc#ready())
+    call CocActionAsync('doHover')
+  else
+    execute '!' . &keywordprg . " " . expand('<cword>')
+  endif
+endfunction
+" Use K to show documentation in preview window.
+nnoremap <silent> K :call <SID>show_documentation()<CR>
 
-  " ----- Keybindings -----
+" Highlight the symbol and its references when holding the cursor.
+autocmd CursorHold * silent call CocActionAsync('highlight')
 
-  au FileType sml nnoremap <silent> <buffer> <leader>t :SMLTypeQuery<CR>
-  au FileType sml nnoremap <silent> <buffer> gd :SMLJumpToDef<CR>
+" Formatting selected code.
+xmap <leader>f  <Plug>(coc-format-selected)
+nmap <leader>f  <Plug>(coc-format-selected)
 
-  " ----- Other settings -----
-
-  " Uncomment to try out conceal characters
-  "au FileType sml setlocal conceallevel=2
-
-  " Uncomment to try out same-width conceal characters
-  "let g:sml_greek_tyvar_show_tick = 1
-augroup END
-" eclim java-specific shortcuts
-augroup Java
-   au!
-   au FileType java nnoremap <buffer> <localleader>jr :JavaRename<Space>
-   au FileType java nnoremap <buffer> <localleader>jg :JavaGet<cr>
-   au FileType java nnoremap <buffer> <localleader>js :JavaSet<cr>
-   au FileType java nnoremap <buffer> <localleader>jb :JavaGetSet<cr>
-   au FileType java nnoremap <buffer> <localleader>jc :JavaConstructor<cr>
-   au FileType java nnoremap <buffer> <localleader>ji :JavaImport<cr>
-   au FileType java nnoremap <buffer> <localleader>jo :JavaImportOrganize<cr>
-   au FileType java nnoremap <buffer> <localleader>jf :JavaSearch<cr>
-   au FileType java nnoremap <buffer> <localleader>p ipublic <esc>
-augroup END
+xmap <leader>a  <Plug>(coc-codeaction-selected)
+nmap <leader>a  <Plug>(coc-codeaction-selected)
 
 
-" highlighting
-"let &colorcolumn="80,".join(range(120,999),",")
-"highlight ColorColumn ctermbg=DarkGray
-"hi CursorLine cterm=underline ctermbg=Black
-"set cursorline
-hi CursorColumn ctermbg=Black
-hi Search cterm=inverse ctermfg=Yellow ctermbg=NONE
-hi ColorColumn ctermbg=DarkGray guibg=LightGray
+" Add `:Format` command to format current buffer.
+command! -nargs=0 Format :call CocAction('format')
+
+" Add `:Fold` command to fold current buffer.
+command! -nargs=? Fold :call     CocAction('fold', <f-args>)
+
+" Add `:OR` command for organize imports of the current buffer.
+command! -nargs=0 OR   :call     CocAction('runCommand', 'editor.action.organizeImport')
+
+" Mappings for CoCList
+" Show all diagnostics.
+nnoremap <silent><nowait> <space>a  :<C-u>CocList diagnostics<cr>
+" Manage extensions.
+nnoremap <silent><nowait> <space>e  :<C-u>CocList extensions<cr>
+" Show commands.
+nnoremap <silent><nowait> <space>c  :<C-u>CocList commands<cr>
+" Find symbol of current document.
+nnoremap <silent><nowait> <space>o  :<C-u>CocList outline<cr>
+" Search workspace symbols.
+nnoremap <silent><nowait> <space>s  :<C-u>CocList -I symbols<cr>
+" Do default action for next item.
+nnoremap <silent><nowait> <space>j  :<C-u>CocNext<CR>
+" Do default action for previous item.
+nnoremap <silent><nowait> <space>k  :<C-u>CocPrev<CR>
+" Resume latest coc list.
+nnoremap <silent><nowait> <space>p  :<C-u>CocListResume<CR>
+
+"""""""""""""
+" Shortcuts "
+"""""""""""""
 
 " mappings
 let mapleader= ","
@@ -146,12 +140,24 @@ nnoremap k gk
 " remove nuisance keys
 nnoremap <F1> <nop>
 
+" buffer jetpack
+nnoremap gb :ls<cr>:b<space>
+
 " retabs
 command! -range=% -nargs=0 Tab2Space execute '<line1>,<line2>s#^\t\+#\=repeat(" ", len(submatch(0))*' . &ts . ')'
 command! -range=% -nargs=0 Space2Tab execute '<line1>,<line2>s#^\( \{'.&ts.'\}\)\+#\=repeat("\t", len(submatch(0))/' . &ts . ')'
 
 " color the current column, for lining things up
 " also works as a mark for __
+" highlighting
+"let &colorcolumn="80,".join(range(120,999),",")
+"highlight ColorColumn ctermbg=DarkGray
+"hi CursorLine cterm=underline ctermbg=Black
+"set cursorline
+hi CursorColumn ctermbg=Black
+hi Search cterm=inverse ctermfg=Yellow ctermbg=NONE
+hi ColorColumn ctermbg=DarkGray guibg=LightGray
+"
 function! StickColumn()
    if &cc == virtcol(".")
       let &cc=0
@@ -171,24 +177,6 @@ nnoremap <C-a> a_<esc>r
 nnoremap <leader>ss :source ~/.vim/vimrc<cr>
 nnoremap <leader>sb :bufdo source ~/.vim/vimrc<cr>
 nnoremap <leader>se :e ~/.vim/vimrc<cr>
-
-" buffer jetpack
-nnoremap gb :ls<cr>:b<space>
-
-"
-
-" eclim shortcuts
-nnoremap <localleader>ef :LocateFile<cr>
-nnoremap <localleader>jl :ProjectList<cr>
-nnoremap <localleader>jt :ProjectTree<cr>
-nnoremap <localleader>ja :Ant
-
-" useful eclim aliases
-command! LF LocateFile
-command! PL ProjectList
-command! PT ProjectTree
-command! WS WorkspaceSettings
-
 
 " matching
 augroup SpecialSyntax
@@ -231,38 +219,16 @@ nnoremap <leader>qq :q<cr>
 nnoremap <leader>e :e<space>
 
 
+""""""""""""""
+" Misc fixes "
+""""""""""""""
 
-let g:lsp_log_verbose = 1
-let g:lsp_log_file = expand('~/vim-lsp.log')
-
-if executable('clangd')
-    " pip install python-language-server
-    au User lsp_setup call lsp#register_server({
-        \ 'name': 'clangd',
-        \ 'cmd': {server_info->['clangd']},
-        \ 'allowlist': ['c', 'cpp'],
-        \ })
+" tmux fix
+if exists('$TMUX')
+    let &t_SI = "\<Esc>Ptmux;\<Esc>\e[5 q\<Esc>\\"
+    let &t_EI = "\<Esc>Ptmux;\<Esc>\e[2 q\<Esc>\\"
+else
+    let &t_SI = "\e[5 q"
+    let &t_EI = "\e[2 q"
 endif
-
-function! s:on_lsp_buffer_enabled() abort
-    setlocal omnifunc=lsp#complete
-    setlocal signcolumn=yes
-    if exists('+tagfunc') | setlocal tagfunc=lsp#tagfunc | endif
-    nmap <buffer> gd <plug>(lsp-definition)
-    nmap <buffer> gr <plug>(lsp-references)
-    nmap <buffer> gi <plug>(lsp-implementation)
-    nmap <buffer> gt <plug>(lsp-type-definition)
-    nmap <buffer> <leader>rn <plug>(lsp-rename)
-    nmap <buffer> [g <Plug>(lsp-previous-diagnostic)
-    nmap <buffer> ]g <Plug>(lsp-next-diagnostic)
-    nmap <buffer> K <plug>(lsp-hover)
-    
-    " refer to doc to add more commands
-endfunction
-
-augroup lsp_install
-    au!
-    " call s:on_lsp_buffer_enabled only for languages that has the server registered.
-    au User lsp_buffer_enabled call s:on_lsp_buffer_enabled()
-    au User lsp_buffer_enabled let g:ale_disable_lsp=1
-augroup END
+"

@@ -41,7 +41,7 @@ set incsearch hlsearch              " incremental search, highlights results
 set clipboard+=unnamed,unnamedplus  " system clipboard for yank and put
 set scrolloff=7                     " leaves seven characters before scrolling
 set autoindent smartindent
-set expandtab tabstop=4 shiftwidth=4
+set expandtab tabstop=2 shiftwidth=2
 set smarttab 
 set backup noswapfile writebackup
 set backupdir=~/.vim-tmp,~/.tmp,~/tmp,/tmp

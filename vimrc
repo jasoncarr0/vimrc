@@ -15,6 +15,19 @@ Plug 'https://github.com/tpope/vim-vinegar.git'
 Plug 'https://github.com/jasoncarr0/sidewalk-colorscheme.git'
 
 Plug 'neoclide/coc.nvim', {'branch': 'release'}
+Plug 'neoclide/coc-rls', {'for': ['rust']}
+Plug 'clangd/coc-clangd'
+Plug 'whonore/Coqtail'
+
+" , {'for': ['c', 'cpp']}
+
+Plug 'dleonard0/pony-vim-syntax'
+Plug 'LnL7/vim-nix'
+Plug 'teggotic/vim-mare'
+Plug 'https://github.com/vim-crystal/vim-crystal'
+
+Plug 'https://github.com/jvoorhis/coq.vim', {'for': ['coq']}
+Plug 'whonore/Coqtail', {'for': ['coq']}
 
 call plug#end()
 
